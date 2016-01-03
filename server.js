@@ -1,22 +1,26 @@
 var express = require('express');
+var bodyParser = require('body-parser');
 var middleware = require('./modules/middleware.js')
 var app = express();
 var PORT = process.env.PORT || 3000;
-var todos = [{
-    id: 1,
-    description: 'List of todos',
-    completed: false
-},
- {
-    id: 2,
-    description: 'List of data',
-    completed: false
-}, 
- {
-    id: 3,
-    description: 'List of sources',
-    completed: true
-}];
+
+//var todos = [{
+//    id: 1,
+//    description: 'List of todos',
+//    completed: false
+//},
+// {
+//    id: 2,
+//    description: 'List of data',
+//    completed: false
+//}, 
+// {
+//    id: 3,
+//    description: 'List of sources',
+//    completed: true
+//}];
+var todos = [];
+var todoNextId = 1;
 
 //app.get('/', function(req, res){
 //    res.send('Hello Express');
@@ -24,6 +28,7 @@ var todos = [{
 
 app.use(middleware.reqAuth);
 app.use(middleware.logger);
+app.use(bodyParser.json());
 
 app.get('/about', function(req, res){
     res.send('About Henry\'s Express');
@@ -37,6 +42,7 @@ app.get('/todos', function(req, res, next) {
    res.json(todos); 
 });
 
+// GET REQUEST
 app.get('/todos/:id', function(req, res, next) {
     // res.send('Requested todo\'s id: ' + req.params.id);
     var todoId = parseInt(req.params.id,10);
@@ -55,6 +61,15 @@ app.get('/todos/:id', function(req, res, next) {
 //    if(!found) {
 //        res.status(404).send();
 //    }
+});
+
+// POST REQUEST
+app.post('/todos', function(req, res, next) {
+    var body = req.body;
+    body.id = todoNextId++;
+    todos.push(body);
+    console.log(todos);
+    res.json(todos);
 });
 
 app.use(express.static(__dirname + '/public'));
