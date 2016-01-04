@@ -76,8 +76,8 @@ app.delete('/todos/:id', function(req, res, next) {
     var todo = _.findWhere(todos, {id:todoId});
     if(todo) {
         todos= _.without(todos, todo);
-        res.status(200).send();
         console.log(todos);
+        return res.status(200).send();
     } else {
         res.status(404).json({"error":"object not found"});
     }  
@@ -93,6 +93,23 @@ app.post('/todos', function(req, res, next) {
     todos.push(_.pick(body, 'description', 'completed', 'id'));
     console.log(todos);
     res.json(todos);
+});
+
+// UPDATE REQ - PUT
+app.put('/todos/:id', function(req, res, next) {
+    var todoId = parseInt(req.params.id,10);
+    var todo = _.findWhere(todos, {id:todoId});
+    if(todo) {
+        var body = _.pick(req.body, 'description', 'completed');
+        if(body.hasOwnProperty('completed') && _.isBoolean(body.completed) && body.hasOwnProperty('description') &&  body.description.trim().length > 0)              {
+                _.extend(todo, body);
+                return res.status(200).send();
+            } else {
+                return res.status(400).send({"error":"bad formatted data"});
+            }       
+    } else {
+        res.status(404).json({"error":"object not found"});       
+    }
 });
 
 app.use(express.static(__dirname + '/public'));
