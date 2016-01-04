@@ -70,6 +70,18 @@ app.get('/todos/:id', function(req, res, next) {
 //    }
 });
 
+// DELETE BY ID
+app.delete('/todos/:id', function(req, res, next) {
+    var todoId = parseInt(req.params.id,10);
+    var todo = _.findWhere(todos, {id:todoId});
+    if(todo) {
+        todos= _.without(todos, todo);
+        res.status(200).send();
+        console.log(todos);
+    } else {
+        res.status(404).json({"error":"object not found"});
+    }  
+});
 // POST REQUEST
 app.post('/todos', function(req, res, next) {
     var body = req.body;
@@ -77,7 +89,7 @@ app.post('/todos', function(req, res, next) {
         return res.status(400).send();
     }
     body.id = todoNextId++;
-    dody.description = body.description.trim();
+    body.description = body.description.trim();
     todos.push(_.pick(body, 'description', 'completed', 'id'));
     console.log(todos);
     res.json(todos);
