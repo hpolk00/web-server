@@ -40,7 +40,7 @@ app.get('/about', function(req, res){
 //});
 
 app.get('/todos', function(req, res, next) {
-    var queryParm = _.pick(req.query, 'description', 'completed');
+    var queryParm = _.pick(req.query, 'description', 'completed', 'q');
     var filteredTodos = todos;
     if(queryParm.hasOwnProperty('completed')) {
         if(queryParm.completed === 'true') {
@@ -53,6 +53,11 @@ app.get('/todos', function(req, res, next) {
     }
     if(queryParm.hasOwnProperty('description')) {
             filteredTodos = _.where(filteredTodos,  {description:queryParm.description});
+    }
+    if(queryParm.hasOwnProperty('q')) {
+        filteredTodos = _.filter(filteredTodos, function(todo){
+            return todo.description.indexOf(queryParm.q) > -1;
+        });
     }
     res.json(filteredTodos); 
 });
