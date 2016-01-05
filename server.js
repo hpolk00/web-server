@@ -45,8 +45,10 @@ app.get('/todos', function(req, res, next) {
     if(queryParm.hasOwnProperty('completed')) {
         if(queryParm.completed === 'true') {
             filteredTodos = _.where(filteredTodos, {completed: true});
-        } else {
+        } else if (queryParm.completed === 'false') {
             filteredTodos = _.where(filteredTodos, {completed: false});
+        } else {
+            res.status(400).send();
         }
     }
     if(queryParm.hasOwnProperty('description')) {
