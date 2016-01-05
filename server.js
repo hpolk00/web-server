@@ -54,9 +54,9 @@ app.get('/todos', function(req, res, next) {
     if(queryParm.hasOwnProperty('description')) {
             filteredTodos = _.where(filteredTodos,  {description:queryParm.description});
     }
-    if(queryParm.hasOwnProperty('q')) {
+    if(queryParm.hasOwnProperty('q') && queryParm.q.length > 0) {
         filteredTodos = _.filter(filteredTodos, function(todo){
-            return todo.description.indexOf(queryParm.q) > -1;
+            return todo.description.toLowerCase().indexOf(queryParm.q.toLowerCase()) > -1;
         });
     }
     res.json(filteredTodos); 
