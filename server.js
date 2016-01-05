@@ -40,7 +40,19 @@ app.get('/about', function(req, res){
 //});
 
 app.get('/todos', function(req, res, next) {
-   res.json(todos); 
+    var queryParm = _.pick(req.query, 'description', 'completed');
+    var filteredTodos = todos;
+    if(queryParm.hasOwnProperty('completed')) {
+        if(queryParm.completed === 'true') {
+            filteredTodos = _.where(filteredTodos, {completed: true});
+        } else {
+            filteredTodos = _.where(filteredTodos, {completed: false});
+        }
+    }
+    if(queryParm.hasOwnProperty('description')) {
+            filteredTodos = _.where(filteredTodos,  {description:queryParm.description});
+    }
+    res.json(filteredTodos); 
 });
 
 // GET REQUEST
@@ -92,6 +104,7 @@ app.post('/todos', function(req, res, next) {
     body.description = body.description.trim();
     todos.push(_.pick(body, 'description', 'completed', 'id'));
     console.log(todos);
+    // JSON sends 200 status by default
     res.json(todos);
 });
 
@@ -101,7 +114,7 @@ app.put('/todos/:id', function(req, res, next) {
     var todo = _.findWhere(todos, {id:todoId});
     if(todo) {
         var body = _.pick(req.body, 'description', 'completed');
-        if(body.hasOwnProperty('completed') && _.isBoolean(body.completed) && body.hasOwnProperty('description') &&  body.description.trim().length > 0)              {
+        if((body.hasOwnProperty('completed') && _.isBoolean(body.completed)) || (body.hasOwnProperty('description') &&  body.description.trim().length > 0)){
                 _.extend(todo, body);
                 return res.status(200).send();
             } else {
