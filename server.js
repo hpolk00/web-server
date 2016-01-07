@@ -73,14 +73,31 @@ app.get('/todos', function (req, res, next) {
 app.get('/todos/:id', function (req, res, next) {
     // res.send('Requested todo\'s id: ' + req.params.id);
     var todoId = parseInt(req.params.id, 10);
-    var todo = _.findWhere(todos, {
-        id: todoId
+    //    var todo = _.findWhere(todos, {
+    //        id: todoId
+    //    });
+    //    if (todo) {
+    //        res.json(todo);
+    //    } else {
+    //        res.status(404).send();
+    //    }
+    //    
+
+    db.todo.findById(todoId).then(function (todo) {
+        if (!!todo) {
+            res.json(todo.toJSON());
+        } else {
+            res.status(404).send();
+        }
+    }, function (e) {
+        res.status(500).send();
     });
-    if (todo) {
-        res.json(todo);
-    } else {
-        res.status(404).send();
-    }
+    //    if (todo) {
+    //        res.json(todo.toJSON());
+    //    } else {
+    //        res.status(404).send();
+    //    }
+
     // var found = false;
     //    if(todoId <= todos.length ) {
     //        res.json(todos[todoId -1])
@@ -107,7 +124,7 @@ app.delete('/todos/:id', function (req, res, next) {
     if (todo) {
         todos = _.without(todos, todo);
         console.log(todos);
-        return res.status(200).send();
+        res.status(200).send();
     } else {
         res.status(404).json({
             "error": "object not found"
@@ -120,7 +137,7 @@ app.post('/todos', function (req, res, next) {
     db.todo.create(body).then(function (todo) {
         res.json(todo.toJSON());
     }).catch(function (e) {
-        return res.status(400).json(e);
+        res.status(400).json(e);
     });
     //    if (!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.trim().length === 0) {
     //        return res.status(400).send();
@@ -143,9 +160,9 @@ app.put('/todos/:id', function (req, res, next) {
         var body = _.pick(req.body, 'description', 'completed');
         if ((body.hasOwnProperty('completed') && _.isBoolean(body.completed)) || (body.hasOwnProperty('description') && body.description.trim().length > 0)) {
             _.extend(todo, body);
-            return res.status(200).send();
+            res.status(200).send();
         } else {
-            return res.status(400).send({
+            res.status(400).send({
                 "error": "bad formatted data"
             });
         }
@@ -160,7 +177,7 @@ app.use(express.static(__dirname + '/public'));
 
 db.sequelize.sync({
     // setting force to true will drop database and recreate all objects
-    force: true
+    force: false
 }).then(function () {
     console.log('TODO database is synced');
     app.listen(PORT, function () {
