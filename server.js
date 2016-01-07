@@ -1,7 +1,8 @@
 var express = require('express');
 var bodyParser = require('body-parser');
 var _ = require('underscore');
-var middleware = require('./modules/middleware.js')
+var middleware = require('./modules/middleware.js');
+var db = require('./db.js')
 var app = express();
 var PORT = process.env.PORT || 3000;
 
@@ -115,16 +116,21 @@ app.delete('/todos/:id', function (req, res, next) {
 });
 // POST REQUEST
 app.post('/todos', function (req, res, next) {
-    var body = req.body;
-    if (!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.trim().length === 0) {
-        return res.status(400).send();
-    }
-    body.id = todoNextId++;
-    body.description = body.description.trim();
-    todos.push(_.pick(body, 'description', 'completed', 'id'));
-    console.log(todos);
+    var body = _.pick(req.body, 'description', 'completed');
+    db.todo.create(body).then(function (todo) {
+        res.json(todo.toJSON());
+    }).catch(function (e) {
+        return res.status(400).json(e);
+    });
+    //    if (!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.trim().length === 0) {
+    //        return res.status(400).send();
+    //    }
+    //    body.id = todoNextId++;
+    //    body.description = body.description.trim();
+    //    todos.push(body);
+    // console.log(todos);
     // JSON sends 200 status by default
-    res.json(todos);
+    // res.json(todos);
 });
 
 // UPDATE REQ - PUT
@@ -152,6 +158,12 @@ app.put('/todos/:id', function (req, res, next) {
 
 app.use(express.static(__dirname + '/public'));
 
-app.listen(PORT, function () {
-    console.log('Express Server Started on port: ' + PORT);
+db.sequelize.sync({
+    // setting force to true will drop database and recreate all objects
+    force: true
+}).then(function () {
+    console.log('TODO database is synced');
+    app.listen(PORT, function () {
+        console.log('Express Server Started on port: ' + PORT);
+    });
 });
