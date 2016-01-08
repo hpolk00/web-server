@@ -217,16 +217,16 @@ app.put('/todos/:id', function (req, res, next) {
     }
     db.todo.findById(todoId).then(function (todo) {
         if (todo) {
-            return todo.update(toup);
+            todo.update(toup).then(function (todo) {
+                res.json(todo.toJSON());
+            }, function (e) {
+                res.status(400).json(e);
+            });
         } else {
             res.status(404).json();
         }
     }, function () {
         res.status(500).send();
-    }).then(function (todo) {
-        res.json(todo.toJSON());
-    }, function (e) {
-        res.status(400).json(e);
     });
     //    if ((body.hasOwnProperty('completed') && _.isBoolean(body.completed)) || (body.hasOwnProperty('description') && body.description.trim().length > 0)) {
     //        _.extend(todo, body);
