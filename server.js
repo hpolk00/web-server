@@ -191,24 +191,55 @@ app.post('/todos', function (req, res, next) {
 // UPDATE REQ - PUT
 app.put('/todos/:id', function (req, res, next) {
     var todoId = parseInt(req.params.id, 10);
-    var todo = _.findWhere(todos, {
-        id: todoId
-    });
-    if (todo) {
-        var body = _.pick(req.body, 'description', 'completed');
-        if ((body.hasOwnProperty('completed') && _.isBoolean(body.completed)) || (body.hasOwnProperty('description') && body.description.trim().length > 0)) {
-            _.extend(todo, body);
-            res.status(200).send();
+    //    var todo = _.findWhere(todos, {
+    //        id: todoId
+    //    });
+    //    if (todo) {
+    var body = _.pick(req.body, 'description', 'completed');
+    var toup = {};
+    if (body.hasOwnProperty('completed')) {
+        if (_.isBoolean(body.completed)) {
+            toup.completed = body.completed;
         } else {
-            res.status(400).send({
+            res.status(400).json({
                 "error": "bad formatted data"
             });
         }
-    } else {
-        res.status(404).json({
-            "error": "object not found"
-        });
     }
+    if (body.hasOwnProperty('description')) {
+        if (_.isString(body.description)) {
+            toup.description = body.description.trim();
+        } else {
+            res.status(400).json({
+                "error": "bad formatted data"
+            })
+        }
+    }
+    db.todo.findById(todoId).then(function (todo) {
+        if (todo) {
+            return todo.update(toup);
+        } else {
+            res.status(404).json();
+        }
+    }, function () {
+        res.status(500).send();
+    }).then(function (todo) {
+        res.json(todo.toJSON());
+    }, function (e) {
+        res.status(400).json(e);
+    });
+    //    if ((body.hasOwnProperty('completed') && _.isBoolean(body.completed)) || (body.hasOwnProperty('description') && body.description.trim().length > 0)) {
+    //        _.extend(todo, body);
+    //        res.status(200).send();
+    //    } else {
+    //        res.status(400).send({
+    //            "error": "bad formatted data"
+    //        });
+    //    }    //    } else {
+    //        res.status(404).json({
+    //            "error": "object not found"
+    //        });
+    //    }
 });
 
 app.use(express.static(__dirname + '/public'));
