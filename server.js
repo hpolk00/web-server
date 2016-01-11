@@ -1,6 +1,7 @@
 var express = require('express');
 var bodyParser = require('body-parser');
 var _ = require('underscore');
+var bcrypt = require('bcrypt');
 var middleware = require('./modules/middleware.js');
 var db = require('./db.js')
 var app = express();
@@ -250,6 +251,29 @@ app.post('/users', function (req, res, next) {
     }).catch(function (e) {
         res.status(400).json(e);
     });
+});
+
+// POST REQUEST USER
+app.post('/users/login', function (req, res, next) {
+    var body = _.pick(req.body, 'email', 'password');
+    if (!_.isString(body.email) || !_.isString(body.password)) {
+        return res.status(400).send();
+    } else {
+        db.user.findOne({
+            where: {
+                email: body.email
+            }
+        }).then(function (user) {
+            if (!user || !bcrypt.compareSync(body.password, user.get('password_hash'))) {
+                // Authentication failed
+                return res.status(401).send();
+            } else {
+                res.json(user.toPublicJSON());
+            }
+        }, function (e) {
+            res.status(500).json(e);
+        });
+    }
 });
 
 app.use(express.static(__dirname + '/public'));
