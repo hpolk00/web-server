@@ -169,7 +169,7 @@ app.delete('/todos/:id', function (req, res, next) {
     //        });
     //    }
 });
-// POST REQUEST
+// POST REQUEST TODO
 app.post('/todos', function (req, res, next) {
     var body = _.pick(req.body, 'description', 'completed');
     db.todo.create(body).then(function (todo) {
@@ -240,6 +240,16 @@ app.put('/todos/:id', function (req, res, next) {
     //            "error": "object not found"
     //        });
     //    }
+});
+
+// POST REQUEST USER
+app.post('/users', function (req, res, next) {
+    var body = _.pick(req.body, 'email', 'password');
+    db.user.create(body).then(function (user) {
+        res.json(user.toJSON());
+    }).catch(function (e) {
+        res.status(400).json(e);
+    });
 });
 
 app.use(express.static(__dirname + '/public'));
