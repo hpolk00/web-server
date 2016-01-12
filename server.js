@@ -257,7 +257,7 @@ app.post('/users', function (req, res, next) {
 app.post('/users/login', function (req, res, next) {
     var body = _.pick(req.body, 'email', 'password');
     db.user.authenticate(body).then(function (user) {
-            res.json(user.toPublicJSON());
+            res.header('Auth', user.generateToken('authentication')).json(user.toPublicJSON());
         }, function () {
             res.status(401).send();
         })
@@ -285,7 +285,7 @@ app.use(express.static(__dirname + '/public'));
 
 db.sequelize.sync({
     // setting force to true will drop database and recreate all objects
-    force: true
+    force: false
 }).then(function () {
     console.log('TODO database is synced');
     app.listen(PORT, function () {
